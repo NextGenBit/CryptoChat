@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>End-to-end encrypted Chat</title>
+    <meta name="description" content="A minimalist, end-to-end ECDH/ECDSA encrypted chat application.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+<div id="vue-instance">
+    <div class="chat-container full-width" ref="chatContainer">
+        <div class="title-header">
+            <h1 v-if="!JoinedRoom">
+                Joining...
+            </h1>
+            <h1 v-else-if="LockedRoom">
+                Room #{{ RoomToJoin }} (Locked)
+            </h1>
+            <h1 v-else>
+                Room #{{ RoomToJoin }} (Unlocked)
+            </h1>
+        </div>
+        <div class="message-list">
+            <div class="message full-width" v-for="message in messages">
+                <p>
+                    <span v-bind:class="(message.sender == username) ? 'yellow' : 'orangered'">{{ message.sender
+                        }}</span>
+                    > {{ message.text }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="info-container full-width">
+        <h1>STATIC KEY ENCRYPTION</h1>
+        <div class="room-select">
+            <input type="password" class="full-width" placeholder="Symmetric Key" id="key-input" v-model="symmetricKey"
+                   @keyup.enter="generatePairs(true)">
+            <input class="yellow-button full-width" type="submit" v-on:click="generatePairs(true)"
+                   value="Send Encrypted Public Key">
+        </div>
+        <div class="divider"></div>
+        <div class="panel-list" ref="notificationContainer">
+            <h1>NOTIFICATION LOG</h1>
+            <div class="notification full-width" v-for="notification in notifications">
+                <div class="notification-timestamp">{{ notification.timestamp }}</div>
+
+                <div v-bind:class="(!notification.urgent) ? 'notification-message' : 'notification-message aqua'">
+                    {{ notification.message }}
+                </div>
+            </div>
+            <h1>Users Online</h1>
+            <div class="onlinelist full-width" v-for="user in onlineUsers">
+                <div class="onlinelist-timestamp">{{ user.timestamp }}</div>
+                <div class="onlinelist-username">{{ user.username }}</div>
+                <div class="onlinelist-status orangered" v-if="user.typing">User is Typing...</div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom-bar full-width">
+        > <input data-emojiable="true" class="message-input" type="text" id="message" placeholder="Message"
+                 :disabled="!JoinedRoom" v-model="draft"
+                 @keyup.enter="sendMessage()">
+    </div>
+</div>
+<script src="js/vue.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/crypto.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
