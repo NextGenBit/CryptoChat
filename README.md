@@ -21,5 +21,5 @@ You can join a room or/and set a username from URL parameters. Example:
 https://cryptochat-url/?room=roomToJoin&username=guest
 ```
 
-![Screenshot 1](https://i.ibb.co/Px4ZT7b/Screenshot-1.png)
+![](https://i.ibb.co/Px4ZT7b/Screenshot-1.png|width=100)
 
