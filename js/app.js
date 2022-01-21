@@ -298,25 +298,28 @@ const vm = new Vue({
 
         async generatePairs(send = false) {
 
-            if (this.symmetricKey && !(this.symmetricKey.length == 32 || this.symmetricKey == 16)) {
+            if (this.symmetricKey && !(this.symmetricKey.length == 32 || this.symmetricKey.length == 16)) {
                 this.addNotification(`Symmetric key needs to be 16 or 32 bytes long.`, true)
                 this.symmetricKey = null
                 return
             }
 
             this.originPublicKey = null
+            
+            //generate new key pairs
             this.originPublicKey = await generateKeyPairs()
 
             if (this.symmetricKey && this.originPublicKey) {
 
+                //encrypt our publicKeys using the SymmetricKey (AES)
                 console.log(this.originPublicKey)
                 this.originPublicKey.ecdh.x = await encryptCk(this.originPublicKey.ecdh.x, this.symmetricKey)
                 this.originPublicKey.ecdh.y = await encryptCk(this.originPublicKey.ecdh.y, this.symmetricKey)
 
+                //Re-parse PublicKeys from onlineUsers using our Symmetric-key. 
                 for (const [userId, onlineUser] of Object.entries(this.onlineUsers)) {
                     const [success, pubKeyParsed] = await this.parsePubKey(onlineUser.pubKey)
                     this.updateKeys(userId, pubKeyParsed)
-
                     console.log(pubKeyParsed)
                 }
 
@@ -326,6 +329,7 @@ const vm = new Vue({
             }
 
             if (send) {
+                //send public key to all Online Users
                 this.sendPublicKey()
             }
         },
@@ -335,14 +339,8 @@ const vm = new Vue({
 
             const ecdhKey = keys.ecdh
 
-
-            if (!(ecdhKey.x.encText)) {
-
-                return [false, keys]
-            }
-
-            if (this.symmetricKey === null) {
-                return [false, keys]
+            if (this.symmetricKey === null && !(ecdhKey.x.encText)) {
+                return [true, keys]
             }
 
             const decryptedX = await decryptCk(ecdhKey.x, this.symmetricKey, keys.ecdsa)
